@@ -1,0 +1,38 @@
+schema: '2.0'
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+    - path: data/raw/telco.csv
+      hash: md5
+      md5: 0f9de68e012bd3aed5fa7cdc9fc421af
+      size: 977501
+    - path: src/prepare.py
+      hash: md5
+      md5: e96e2c5c1b8b4b1136bbcc320f76f27b
+      size: 1209
+    params:
+      params.yaml:
+        random_state: 42
+        test_size: 0.2
+    outs:
+    - path: data/processed
+      hash: md5
+      md5: 2d0e2ed3e944e7da8bad352178f83430.dir
+      size: 894643
+      nfiles: 2
+  train:
+    cmd: python src/train.py
+    deps:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: c0449122bb854fbe1ecdffe342f3cbbc
+      size: 179303
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 07553d612f5cbcb9fc80368a1d5513a2
+      size: 715340
+    - path: src/train.py
+      hash: md5
+      md5: e232f3c693ba20bbf59f7ddf35d6bc7b
+      size: 4293

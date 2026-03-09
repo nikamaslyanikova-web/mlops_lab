@@ -1,0 +1,17 @@
+stages:
+  prepare:
+    cmd: python src/prepare.py
+    deps:
+    - data/raw/telco.csv
+    - src/prepare.py
+    params:
+    - random_state
+    - test_size
+    outs:
+    - data/processed
+  train:
+    cmd: python src/train.py
+    deps:
+    - data/processed/test.csv
+    - data/processed/train.csv
+    - src/train.py
