@@ -15,3 +15,16 @@ stages:
     - data/processed/test.csv
     - data/processed/train.csv
     - src/train.py
+  hpo:
+    cmd: python src/hpo.py
+    deps:
+    - data/processed/test.csv
+    - data/processed/train.csv
+    - src/hpo.py
+  train_best:
+    cmd: python src/train_best.py
+    deps:
+    - artifacts/best_params.json
+    - data/processed/test.csv
+    - data/processed/train.csv
+    - src/train_best.py

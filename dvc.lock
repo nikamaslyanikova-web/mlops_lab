@@ -36,3 +36,37 @@ stages:
       hash: md5
       md5: e232f3c693ba20bbf59f7ddf35d6bc7b
       size: 4293
+  hpo:
+    cmd: python src/hpo.py
+    deps:
+    - path: data/processed/test.csv
+      hash: md5
+      md5: c0449122bb854fbe1ecdffe342f3cbbc
+      size: 179303
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 07553d612f5cbcb9fc80368a1d5513a2
+      size: 715340
+    - path: src/hpo.py
+      hash: md5
+      md5: ae681faae88f99423b9e8aab8a612d17
+      size: 2082
+  train_best:
+    cmd: python src/train_best.py
+    deps:
+    - path: artifacts/best_params.json
+      hash: md5
+      md5: 4aa08d0415543bca340267351036680b
+      size: 79
+    - path: data/processed/test.csv
+      hash: md5
+      md5: c0449122bb854fbe1ecdffe342f3cbbc
+      size: 179303
+    - path: data/processed/train.csv
+      hash: md5
+      md5: 07553d612f5cbcb9fc80368a1d5513a2
+      size: 715340
+    - path: src/train_best.py
+      hash: md5
+      md5: 606c043a36616804ae587b41801f8b3c
+      size: 1227
