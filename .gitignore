@@ -23,3 +23,7 @@ artifacts/
 .idea/
 EOF
 mlflow.db
+
+model.pkl
+metrics.json
+confusion_matrix.png
