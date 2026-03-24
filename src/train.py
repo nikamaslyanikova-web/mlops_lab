@@ -15,11 +15,16 @@ from sklearn.ensemble import RandomForestClassifier
 import mlflow
 import mlflow.sklearn
 
+import json
+import joblib
 
+
+# -------------------------
+# LOAD DATA
+# -------------------------
 def load_data(path: Path):
     df = pd.read_csv(path)
 
-    # convert TotalCharges to numeric
     df["TotalCharges"] = pd.to_numeric(df["TotalCharges"], errors="coerce")
 
     if "customerID" in df.columns:
@@ -28,6 +33,9 @@ def load_data(path: Path):
     return df
 
 
+# -------------------------
+# PIPELINE
+# -------------------------
 def build_pipeline(cat_cols, num_cols, n_estimators, max_depth, min_samples_leaf, random_state):
 
     num_pipe = Pipeline([
@@ -61,6 +69,9 @@ def build_pipeline(cat_cols, num_cols, n_estimators, max_depth, min_samples_leaf
     return pipe
 
 
+# -------------------------
+# CONFUSION MATRIX
+# -------------------------
 def save_confusion_matrix(y_true, y_pred, output_path: Path):
 
     cm = confusion_matrix(y_true, y_pred)
@@ -75,6 +86,9 @@ def save_confusion_matrix(y_true, y_pred, output_path: Path):
     plt.close()
 
 
+# -------------------------
+# MAIN
+# -------------------------
 def main():
 
     parser = argparse.ArgumentParser()
@@ -82,7 +96,7 @@ def main():
     parser.add_argument("--train-path", type=str, default="data/processed/train.csv")
     parser.add_argument("--test-path", type=str, default="data/processed/test.csv")
 
-    parser.add_argument("--experiment-name", type=str, default="Telco_Churn_LR2")
+    parser.add_argument("--experiment-name", type=str, default="Telco_Churn_LR4")
 
     parser.add_argument("--n-estimators", type=int, default=300)
     parser.add_argument("--max-depth", type=int, default=6)
@@ -92,11 +106,8 @@ def main():
 
     args = parser.parse_args()
 
-    train_path = Path(args.train_path)
-    test_path = Path(args.test_path)
-
-    train_df = load_data(train_path)
-    test_df = load_data(test_path)
+    train_df = load_data(Path(args.train_path))
+    test_df = load_data(Path(args.test_path))
 
     y_train = train_df["Churn"].map({"Yes": 1, "No": 0})
     X_train = train_df.drop(columns=["Churn"])
@@ -123,35 +134,49 @@ def main():
 
     with mlflow.start_run():
 
-        mlflow.log_params({
-            "model": "RandomForestClassifier",
-            "n_estimators": args.n_estimators,
-            "max_depth": args.max_depth,
-            "min_samples_leaf": args.min_samples_leaf,
-            "random_state": args.random_state
-        })
-
+        # -------------------------
+        # TRAIN
+        # -------------------------
         pipe.fit(X_train, y_train)
 
         y_pred = pipe.predict(X_test)
 
-        acc = accuracy_score(y_test, y_pred)
-        f1 = f1_score(y_test, y_pred)
+        acc = float(accuracy_score(y_test, y_pred))
+        f1 = float(f1_score(y_test, y_pred))
 
+        # -------------------------
+        # METRICS
+        # -------------------------
         mlflow.log_metric("test_accuracy", acc)
         mlflow.log_metric("test_f1", f1)
 
         if hasattr(pipe.named_steps["model"], "predict_proba"):
             proba = pipe.predict_proba(X_test)[:, 1]
-            auc = roc_auc_score(y_test, proba)
+            auc = float(roc_auc_score(y_test, proba))
             mlflow.log_metric("test_roc_auc", auc)
 
-        cm_path = artifacts_dir / "confusion_matrix.png"
+        # -------------------------
+        # SAVE ARTIFACTS
+        # -------------------------
+        cm_path = Path("confusion_matrix.png")
         save_confusion_matrix(y_test, y_pred, cm_path)
 
         mlflow.log_artifact(str(cm_path))
 
         mlflow.sklearn.log_model(pipe, artifact_path="model")
+
+        # -------------------------
+        # SAVE FILES FOR CI/CD
+        # -------------------------
+        joblib.dump(pipe, "model.pkl")
+
+        metrics = {
+            "accuracy": acc,
+            "f1": f1
+        }
+
+        with open("metrics.json", "w") as f:
+            json.dump(metrics, f, indent=2)
 
 
 if __name__ == "__main__":
