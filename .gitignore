@@ -11,9 +11,7 @@ venv/
 # Jupyter
 .ipynb_checkpoints/
 
-# outputs
-data/*
-!data/raw/
+
 models/
 mlruns/
 artifacts/
