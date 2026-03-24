@@ -4,3 +4,5 @@ scikit-learn
 matplotlib
 mlflow
 jupyter
+flake8
+black
