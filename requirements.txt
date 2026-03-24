@@ -6,3 +6,4 @@ mlflow
 jupyter
 flake8
 black
+dvc
