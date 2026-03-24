@@ -32,9 +32,9 @@ jobs:
         run: |
           black . --check
 
-      - name: Train model
+      - name: Run DVC pipeline
         run: |
-          python src/train.py
+          dvc repro
 
       - name: Run tests
         env:
