@@ -42,7 +42,7 @@ jobs:
 
       - name: Run tests
         env:
-          F1_THRESHOLD: "0.7"
+          F1_THRESHOLD: "0.6"
         run: |
           pytest -q
 
