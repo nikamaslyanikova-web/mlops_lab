@@ -9,7 +9,6 @@ from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
 
-
 train = pd.read_csv("data/processed/train.csv")
 test = pd.read_csv("data/processed/test.csv")
 
@@ -28,21 +27,26 @@ cat_cols = X_train.select_dtypes(include="object").columns
 num_cols = X_train.select_dtypes(exclude="object").columns
 
 
-preprocess = ColumnTransformer([
-    ("num", SimpleImputer(strategy="median"), num_cols),
-    ("cat", Pipeline([
-        ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("ohe", OneHotEncoder(handle_unknown="ignore"))
-    ]), cat_cols)
-])
+preprocess = ColumnTransformer(
+    [
+        ("num", SimpleImputer(strategy="median"), num_cols),
+        (
+            "cat",
+            Pipeline(
+                [
+                    ("imputer", SimpleImputer(strategy="most_frequent")),
+                    ("ohe", OneHotEncoder(handle_unknown="ignore")),
+                ]
+            ),
+            cat_cols,
+        ),
+    ]
+)
 
 
 model = LogisticRegression(**best_params)
 
-pipeline = Pipeline([
-    ("prep", preprocess),
-    ("model", model)
-])
+pipeline = Pipeline([("prep", preprocess), ("model", model)])
 
 
 pipeline.fit(X_train, y_train)

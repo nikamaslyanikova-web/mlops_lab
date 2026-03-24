@@ -31,7 +31,7 @@ def main():
         df,
         test_size=args.test_size,
         random_state=args.random_state,
-        stratify=df["Churn"]
+        stratify=df["Churn"],
     )
 
     train_df.to_csv(output_dir / "train.csv", index=False)

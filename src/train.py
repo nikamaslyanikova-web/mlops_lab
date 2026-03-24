@@ -36,21 +36,22 @@ def load_data(path: Path):
 # -------------------------
 # PIPELINE
 # -------------------------
-def build_pipeline(cat_cols, num_cols, n_estimators, max_depth, min_samples_leaf, random_state):
+def build_pipeline(
+    cat_cols, num_cols, n_estimators, max_depth, min_samples_leaf, random_state
+):
 
-    num_pipe = Pipeline([
-        ("imputer", SimpleImputer(strategy="median"))
-    ])
+    num_pipe = Pipeline([("imputer", SimpleImputer(strategy="median"))])
 
-    cat_pipe = Pipeline([
-        ("imputer", SimpleImputer(strategy="most_frequent")),
-        ("encoder", OneHotEncoder(handle_unknown="ignore"))
-    ])
+    cat_pipe = Pipeline(
+        [
+            ("imputer", SimpleImputer(strategy="most_frequent")),
+            ("encoder", OneHotEncoder(handle_unknown="ignore")),
+        ]
+    )
 
-    preprocessor = ColumnTransformer([
-        ("num", num_pipe, num_cols),
-        ("cat", cat_pipe, cat_cols)
-    ])
+    preprocessor = ColumnTransformer(
+        [("num", num_pipe, num_cols), ("cat", cat_pipe, cat_cols)]
+    )
 
     model = RandomForestClassifier(
         n_estimators=n_estimators,
@@ -58,13 +59,10 @@ def build_pipeline(cat_cols, num_cols, n_estimators, max_depth, min_samples_leaf
         min_samples_leaf=min_samples_leaf,
         random_state=random_state,
         n_jobs=-1,
-        class_weight="balanced"
+        class_weight="balanced",
     )
 
-    pipe = Pipeline([
-        ("preprocess", preprocessor),
-        ("model", model)
-    ])
+    pipe = Pipeline([("preprocess", preprocessor), ("model", model)])
 
     return pipe
 
@@ -124,7 +122,7 @@ def main():
         args.n_estimators,
         args.max_depth,
         args.min_samples_leaf,
-        args.random_state
+        args.random_state,
     )
 
     mlflow.set_experiment(args.experiment_name)
@@ -170,10 +168,7 @@ def main():
         # -------------------------
         joblib.dump(pipe, "model.pkl")
 
-        metrics = {
-            "accuracy": acc,
-            "f1": f1
-        }
+        metrics = {"accuracy": acc, "f1": f1}
 
         with open("metrics.json", "w") as f:
             json.dump(metrics, f, indent=2)

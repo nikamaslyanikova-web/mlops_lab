@@ -11,7 +11,6 @@ from sklearn.preprocessing import OneHotEncoder
 from sklearn.impute import SimpleImputer
 import json
 
-
 train = pd.read_csv("data/processed/train.csv")
 test = pd.read_csv("data/processed/test.csv")
 
@@ -24,19 +23,18 @@ X_test = test.drop(columns=["Churn"])
 cat_cols = X_train.select_dtypes(include="object").columns.tolist()
 num_cols = X_train.select_dtypes(exclude="object").columns.tolist()
 
-num_pipe = Pipeline([
-    ("imputer", SimpleImputer(strategy="median"))
-])
+num_pipe = Pipeline([("imputer", SimpleImputer(strategy="median"))])
 
-cat_pipe = Pipeline([
-    ("imputer", SimpleImputer(strategy="most_frequent")),
-    ("ohe", OneHotEncoder(handle_unknown="ignore"))
-])
+cat_pipe = Pipeline(
+    [
+        ("imputer", SimpleImputer(strategy="most_frequent")),
+        ("ohe", OneHotEncoder(handle_unknown="ignore")),
+    ]
+)
 
-preprocess = ColumnTransformer([
-    ("num", num_pipe, num_cols),
-    ("cat", cat_pipe, cat_cols)
-])
+preprocess = ColumnTransformer(
+    [("num", num_pipe, num_cols), ("cat", cat_pipe, cat_cols)]
+)
 
 
 def objective(trial):
@@ -45,16 +43,9 @@ def objective(trial):
     max_iter = trial.suggest_int("max_iter", 200, 1000)
     solver = trial.suggest_categorical("solver", ["liblinear", "lbfgs"])
 
-    model = LogisticRegression(
-        C=C,
-        max_iter=max_iter,
-        solver=solver
-    )
+    model = LogisticRegression(C=C, max_iter=max_iter, solver=solver)
 
-    pipeline = Pipeline([
-        ("prep", preprocess),
-        ("model", model)
-    ])
+    pipeline = Pipeline([("prep", preprocess), ("model", model)])
 
     with mlflow.start_run(nested=True):
 
@@ -64,11 +55,7 @@ def objective(trial):
 
         f1 = f1_score(y_test, preds, pos_label="Yes")
 
-        mlflow.log_params({
-            "C": C,
-            "max_iter": max_iter,
-            "solver": solver
-        })
+        mlflow.log_params({"C": C, "max_iter": max_iter, "solver": solver})
 
         mlflow.log_metric("f1_score", f1)
 
